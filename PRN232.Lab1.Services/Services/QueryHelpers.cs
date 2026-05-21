@@ -15,7 +15,11 @@ namespace PRN232.Lab1.Services.Services
         public static bool HasExpand(this QueryOptions options, string expand)
         {
             return SplitCsv(options.Expand)
-                .Any(x => x.Equals(expand, StringComparison.OrdinalIgnoreCase));
+                .Any(x =>
+                    x.Equals("*", StringComparison.OrdinalIgnoreCase) ||
+                    x.Equals("all", StringComparison.OrdinalIgnoreCase) ||
+                    x.Equals(expand, StringComparison.OrdinalIgnoreCase) ||
+                    x.StartsWith($"{expand}.", StringComparison.OrdinalIgnoreCase));
         }
 
         public static IEnumerable<(string Field, bool Descending)> GetSorts(this QueryOptions options)
@@ -24,6 +28,27 @@ namespace PRN232.Lab1.Services.Services
                 .Select(sort => sort.StartsWith("-", StringComparison.Ordinal)
                     ? (sort[1..], true)
                     : (sort, false));
+        }
+
+        public static bool HasFields(this QueryOptions options)
+        {
+            return SplitCsv(options.Fields).Length > 0;
+        }
+
+        public static bool HasField(this QueryOptions options, string field)
+        {
+            var fields = SplitCsv(options.Fields);
+            return fields.Length == 0 ||
+                fields.Any(x =>
+                    x.Equals(field, StringComparison.OrdinalIgnoreCase) ||
+                    x.Equals(ToCamelCase(field), StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static string ToCamelCase(string value)
+        {
+            return string.IsNullOrWhiteSpace(value) || char.IsLower(value[0])
+                ? value
+                : char.ToLowerInvariant(value[0]) + value[1..];
         }
 
         public static void Normalize(this QueryOptions options)

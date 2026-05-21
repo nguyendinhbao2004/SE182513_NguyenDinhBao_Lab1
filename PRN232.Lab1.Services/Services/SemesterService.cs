@@ -27,21 +27,6 @@ namespace PRN232.Lab1.Services.Services
                     .ThenInclude(x => x.Subject);
             }
 
-            if (options.SemesterId.HasValue)
-            {
-                query = query.Where(x => x.SemesterId == options.SemesterId.Value);
-            }
-
-            if (options.FromDate.HasValue)
-            {
-                query = query.Where(x => x.StartDate >= options.FromDate.Value);
-            }
-
-            if (options.ToDate.HasValue)
-            {
-                query = query.Where(x => x.EndDate <= options.ToDate.Value);
-            }
-
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 var search = options.Search.Trim();
@@ -176,11 +161,11 @@ namespace PRN232.Lab1.Services.Services
         {
             return new SemesterModel
             {
-                SemesterId = entity.SemesterId,
-                SemesterName = entity.SemesterName,
-                StartDate = entity.StartDate,
-                EndDate = entity.EndDate,
-                Courses = options.HasExpand("courses") ? entity.Courses?.Select(course => new CourseModel
+                SemesterId = options.HasField(nameof(SemesterModel.SemesterId)) ? entity.SemesterId : default,
+                SemesterName = options.HasField(nameof(SemesterModel.SemesterName)) ? entity.SemesterName : null,
+                StartDate = options.HasField(nameof(SemesterModel.StartDate)) ? entity.StartDate : default,
+                EndDate = options.HasField(nameof(SemesterModel.EndDate)) ? entity.EndDate : default,
+                Courses = options.HasField(nameof(SemesterModel.Courses)) && options.HasExpand("courses") ? entity.Courses?.Select(course => new CourseModel
                 {
                     CourseId = course.CourseId,
                     CourseName = course.CourseName,

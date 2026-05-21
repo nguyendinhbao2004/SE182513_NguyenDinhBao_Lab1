@@ -32,21 +32,6 @@ namespace PRN232.Lab1.Services.Services
                         .ThenInclude(x => x.Subject);
             }
 
-            if (options.StudentId.HasValue)
-            {
-                query = query.Where(x => x.StudentId == options.StudentId.Value);
-            }
-
-            if (options.FromDate.HasValue)
-            {
-                query = query.Where(x => x.DateOfBirth >= options.FromDate.Value);
-            }
-
-            if (options.ToDate.HasValue)
-            {
-                query = query.Where(x => x.DateOfBirth <= options.ToDate.Value);
-            }
-
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 var search = options.Search.Trim();
@@ -203,11 +188,11 @@ namespace PRN232.Lab1.Services.Services
         {
             return new StudentModel
             {
-                StudentId = entity.StudentId,
-                FullName = entity.FullName,
-                Email = entity.Email,
-                DateOfBirth = entity.DateOfBirth,
-                Enrollments = options.HasExpand("enrollments")
+                StudentId = options.HasField(nameof(StudentModel.StudentId)) ? entity.StudentId : default,
+                FullName = options.HasField(nameof(StudentModel.FullName)) ? entity.FullName : null,
+                Email = options.HasField(nameof(StudentModel.Email)) ? entity.Email : null,
+                DateOfBirth = options.HasField(nameof(StudentModel.DateOfBirth)) ? entity.DateOfBirth : default,
+                Enrollments = options.HasField(nameof(StudentModel.Enrollments)) && options.HasExpand("enrollments")
                     ? entity.Enrollments?.Select(enrollment => MapEnrollmentSummary(enrollment, entity)).ToList()
                     : null
             };

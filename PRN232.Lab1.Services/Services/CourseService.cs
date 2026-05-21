@@ -40,31 +40,6 @@ namespace PRN232.Lab1.Services.Services
                 query = query.Include(x => x.Enrollments);
             }
 
-            if (options.CourseId.HasValue)
-            {
-                query = query.Where(x => x.CourseId == options.CourseId.Value);
-            }
-
-            if (options.SemesterId.HasValue)
-            {
-                query = query.Where(x => x.SemesterId == options.SemesterId.Value);
-            }
-
-            if (options.SubjectId.HasValue)
-            {
-                query = query.Where(x => x.SubjectId == options.SubjectId.Value);
-            }
-
-            if (options.MinCredit.HasValue)
-            {
-                query = query.Where(x => x.Subject != null && x.Subject.Credit >= options.MinCredit.Value);
-            }
-
-            if (options.MaxCredit.HasValue)
-            {
-                query = query.Where(x => x.Subject != null && x.Subject.Credit <= options.MaxCredit.Value);
-            }
-
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 var search = options.Search.Trim();
@@ -229,28 +204,28 @@ namespace PRN232.Lab1.Services.Services
 
             return new CourseModel
             {
-                CourseId = entity.CourseId,
-                CourseName = entity.CourseName,
-                SemesterId = entity.SemesterId,
-                SemesterName = entity.Semester?.SemesterName,
-                Semester = options.HasExpand("semester") && entity.Semester != null ? new SemesterModel
+                CourseId = options.HasField(nameof(CourseModel.CourseId)) ? entity.CourseId : default,
+                CourseName = options.HasField(nameof(CourseModel.CourseName)) ? entity.CourseName : null,
+                SemesterId = options.HasField(nameof(CourseModel.SemesterId)) ? entity.SemesterId : default,
+                SemesterName = options.HasField(nameof(CourseModel.SemesterName)) ? entity.Semester?.SemesterName : null,
+                Semester = options.HasField(nameof(CourseModel.Semester)) && options.HasExpand("semester") && entity.Semester != null ? new SemesterModel
                 {
                     SemesterId = entity.Semester.SemesterId,
                     SemesterName = entity.Semester.SemesterName,
                     StartDate = entity.Semester.StartDate,
                     EndDate = entity.Semester.EndDate
                 } : null,
-                SubjectId = entity.SubjectId,
-                SubjectCode = entity.Subject?.SubjectCode,
-                SubjectName = entity.Subject?.SubjectName,
-                Subject = options.HasExpand("subject") && entity.Subject != null ? new SubjectModel
+                SubjectId = options.HasField(nameof(CourseModel.SubjectId)) ? entity.SubjectId : default,
+                SubjectCode = options.HasField(nameof(CourseModel.SubjectCode)) ? entity.Subject?.SubjectCode : null,
+                SubjectName = options.HasField(nameof(CourseModel.SubjectName)) ? entity.Subject?.SubjectName : null,
+                Subject = options.HasField(nameof(CourseModel.Subject)) && options.HasExpand("subject") && entity.Subject != null ? new SubjectModel
                 {
                     SubjectId = entity.Subject.SubjectId,
                     SubjectCode = entity.Subject.SubjectCode,
                     SubjectName = entity.Subject.SubjectName,
                     Credit = entity.Subject.Credit
                 } : null,
-                Enrollments = expandEnrollments ? entity.Enrollments?.Select(enrollment => new EnrollmentModel
+                Enrollments = options.HasField(nameof(CourseModel.Enrollments)) && expandEnrollments ? entity.Enrollments?.Select(enrollment => new EnrollmentModel
                 {
                     EnrollmentId = enrollment.EnrollmentId,
                     StudentId = enrollment.StudentId,
