@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace PRN232.Lab1.API.Models.Responses
 {
     public class SemesterResponse
@@ -6,6 +8,7 @@ namespace PRN232.Lab1.API.Models.Responses
         public string? SemesterName { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IReadOnlyCollection<CourseSummaryResponse>? Courses { get; set; }
     }
 }

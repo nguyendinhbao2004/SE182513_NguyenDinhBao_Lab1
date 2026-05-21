@@ -35,15 +35,15 @@ namespace PRN232.Lab1.API.Controllers
         [ProducesResponseType(typeof(Response<CourseResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Response<CourseResponse>>> GetCourseById(int id)
+        public async Task<ActionResult<Response<object>>> GetCourseById(int id, [FromQuery] QueryParameters query)
         {
-            var course = await _courseService.GetByIdAsync(id);
+            var course = await _courseService.GetByIdAsync(id, query.ToOptions());
             if (course == null)
             {
                 return NotFound(Failure("Course not found"));
             }
 
-            return Ok(Success(course.ToResponse()));
+            return Ok(Success(FieldSelector.Apply(course.ToResponse(), query.Fields)));
         }
 
         [HttpPost]

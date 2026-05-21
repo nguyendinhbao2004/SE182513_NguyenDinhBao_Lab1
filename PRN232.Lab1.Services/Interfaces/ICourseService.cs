@@ -5,7 +5,7 @@ namespace PRN232.Lab1.Services.Interfaces
     public interface ICourseService
     {
         Task<PagedResult<CourseModel>> GetPagedAsync(QueryOptions options);
-        Task<CourseModel?> GetByIdAsync(int id);
+        Task<CourseModel?> GetByIdAsync(int id, QueryOptions? options = null);
         Task<ServiceResult<CourseModel>> CreateAsync(CourseModel model);
         Task<ServiceResult<CourseModel>> UpdateAsync(int id, CourseModel model);
         Task<ServiceResult<bool>> DeleteAsync(int id);

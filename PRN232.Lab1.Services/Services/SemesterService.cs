@@ -19,9 +19,13 @@ namespace PRN232.Lab1.Services.Services
         {
             options.Normalize();
 
-            IQueryable<Semester> query = _semesterRepository.Query()
-                .Include(x => x.Courses!)
+            IQueryable<Semester> query = _semesterRepository.Query();
+
+            if (options.HasExpand("courses"))
+            {
+                query = query.Include(x => x.Courses!)
                     .ThenInclude(x => x.Subject);
+            }
 
             if (options.SemesterId.HasValue)
             {
@@ -46,17 +50,24 @@ namespace PRN232.Lab1.Services.Services
 
             query = ApplySorting(query, options);
 
-            return await QueryHelpers.ToPagedResultAsync(query, options, MapSemester);
+            return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapSemester(entity, options));
         }
 
-        public async Task<SemesterModel?> GetByIdAsync(int id)
+        public async Task<SemesterModel?> GetByIdAsync(int id, QueryOptions? options = null)
         {
-            var entity = await _semesterRepository.Query()
-                .Include(x => x.Courses!)
-                    .ThenInclude(x => x.Subject)
-                .FirstOrDefaultAsync(x => x.SemesterId == id);
+            options ??= new QueryOptions();
 
-            return entity == null ? null : MapSemester(entity);
+            IQueryable<Semester> query = _semesterRepository.Query();
+
+            if (options.HasExpand("courses"))
+            {
+                query = query.Include(x => x.Courses!)
+                    .ThenInclude(x => x.Subject);
+            }
+
+            var entity = await query.FirstOrDefaultAsync(x => x.SemesterId == id);
+
+            return entity == null ? null : MapSemester(entity, options);
         }
 
         public async Task<ServiceResult<SemesterModel>> CreateAsync(SemesterModel model)
@@ -77,7 +88,7 @@ namespace PRN232.Lab1.Services.Services
             await _semesterRepository.AddAsync(entity);
             await _semesterRepository.SaveChangesAsync();
 
-            return ServiceResult<SemesterModel>.Ok(MapSemester(entity), "Semester created successfully");
+            return ServiceResult<SemesterModel>.Ok(MapSemester(entity, new QueryOptions()), "Semester created successfully");
         }
 
         public async Task<ServiceResult<SemesterModel>> UpdateAsync(int id, SemesterModel model)
@@ -101,7 +112,7 @@ namespace PRN232.Lab1.Services.Services
             _semesterRepository.Update(entity);
             await _semesterRepository.SaveChangesAsync();
 
-            return ServiceResult<SemesterModel>.Ok(MapSemester(entity), "Semester updated successfully");
+            return ServiceResult<SemesterModel>.Ok(MapSemester(entity, new QueryOptions()), "Semester updated successfully");
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(int id)
@@ -161,7 +172,7 @@ namespace PRN232.Lab1.Services.Services
             return ordered ? query : query.OrderBy(x => x.SemesterId);
         }
 
-        private static SemesterModel MapSemester(Semester entity)
+        private static SemesterModel MapSemester(Semester entity, QueryOptions options)
         {
             return new SemesterModel
             {
@@ -169,7 +180,7 @@ namespace PRN232.Lab1.Services.Services
                 SemesterName = entity.SemesterName,
                 StartDate = entity.StartDate,
                 EndDate = entity.EndDate,
-                Courses = entity.Courses?.Select(course => new CourseModel
+                Courses = options.HasExpand("courses") ? entity.Courses?.Select(course => new CourseModel
                 {
                     CourseId = course.CourseId,
                     CourseName = course.CourseName,
@@ -178,7 +189,7 @@ namespace PRN232.Lab1.Services.Services
                     SubjectId = course.SubjectId,
                     SubjectCode = course.Subject?.SubjectCode,
                     SubjectName = course.Subject?.SubjectName
-                }).ToList()
+                }).ToList() : null
             };
         }
     }

@@ -13,7 +13,7 @@ namespace PRN232.Lab1.API.Models
                 FullName = model.FullName,
                 Email = model.Email,
                 DateOfBirth = model.DateOfBirth,
-                Enrollments = model.Enrollments?.Select(x => x.ToSummaryResponse()).ToList() ?? []
+                Enrollments = model.Enrollments?.Select(x => x.ToSummaryResponse()).ToList()
             };
         }
 
@@ -25,7 +25,7 @@ namespace PRN232.Lab1.API.Models
                 SemesterName = model.SemesterName,
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
-                Courses = model.Courses?.Select(x => x.ToSummaryResponse()).ToList() ?? []
+                Courses = model.Courses?.Select(x => x.ToSummaryResponse()).ToList()
             };
         }
 
@@ -37,7 +37,7 @@ namespace PRN232.Lab1.API.Models
                 SubjectCode = model.SubjectCode,
                 SubjectName = model.SubjectName,
                 Credit = model.Credit,
-                Courses = model.Courses?.Select(x => x.ToSummaryResponse()).ToList() ?? []
+                Courses = model.Courses?.Select(x => x.ToSummaryResponse()).ToList()
             };
         }
 
@@ -54,7 +54,7 @@ namespace PRN232.Lab1.API.Models
                 SubjectCode = model.SubjectCode,
                 SubjectName = model.SubjectName,
                 Subject = model.Subject?.ToSummaryResponse(),
-                Enrollments = model.Enrollments?.Select(x => x.ToSummaryResponse()).ToList() ?? []
+                Enrollments = model.Enrollments?.Select(x => x.ToSummaryResponse()).ToList()
             };
         }
 

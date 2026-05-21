@@ -77,19 +77,31 @@ namespace PRN232.Lab1.Services.Services
 
             query = ApplySorting(query, options);
 
-            return await QueryHelpers.ToPagedResultAsync(query, options, MapCourse);
+            return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapCourse(entity, options));
         }
 
-        public async Task<CourseModel?> GetByIdAsync(int id)
+        public async Task<CourseModel?> GetByIdAsync(int id, QueryOptions? options = null)
         {
-            var entity = await _courseRepository.Query()
-                .Include(x => x.Semester)
-                .Include(x => x.Subject)
-                .Include(x => x.Enrollments!)
-                    .ThenInclude(x => x.Student)
-                .FirstOrDefaultAsync(x => x.CourseId == id);
+            options ??= new QueryOptions();
 
-            return entity == null ? null : MapCourse(entity);
+            IQueryable<Course> query = _courseRepository.Query()
+                .Include(x => x.Semester)
+                .Include(x => x.Subject);
+
+            if (options.HasExpand("enrollments.student"))
+            {
+                query = query.Include(x => x.Enrollments!)
+                    .ThenInclude(x => x.Student)
+                    .AsQueryable();
+            }
+            else if (options.HasExpand("enrollments"))
+            {
+                query = query.Include(x => x.Enrollments);
+            }
+
+            var entity = await query.FirstOrDefaultAsync(x => x.CourseId == id);
+
+            return entity == null ? null : MapCourse(entity, options);
         }
 
         public async Task<ServiceResult<CourseModel>> CreateAsync(CourseModel model)
@@ -210,48 +222,51 @@ namespace PRN232.Lab1.Services.Services
             return ordered ? query : query.OrderBy(x => x.CourseId);
         }
 
-        private static CourseModel MapCourse(Course entity)
+        private static CourseModel MapCourse(Course entity, QueryOptions options)
         {
+            var expandEnrollments = options.HasExpand("enrollments") || options.HasExpand("enrollments.student");
+            var expandEnrollmentStudent = options.HasExpand("enrollments.student");
+
             return new CourseModel
             {
                 CourseId = entity.CourseId,
                 CourseName = entity.CourseName,
                 SemesterId = entity.SemesterId,
                 SemesterName = entity.Semester?.SemesterName,
-                Semester = entity.Semester == null ? null : new SemesterModel
+                Semester = options.HasExpand("semester") && entity.Semester != null ? new SemesterModel
                 {
                     SemesterId = entity.Semester.SemesterId,
                     SemesterName = entity.Semester.SemesterName,
                     StartDate = entity.Semester.StartDate,
                     EndDate = entity.Semester.EndDate
-                },
+                } : null,
                 SubjectId = entity.SubjectId,
                 SubjectCode = entity.Subject?.SubjectCode,
                 SubjectName = entity.Subject?.SubjectName,
-                Subject = entity.Subject == null ? null : new SubjectModel
+                Subject = options.HasExpand("subject") && entity.Subject != null ? new SubjectModel
                 {
                     SubjectId = entity.Subject.SubjectId,
                     SubjectCode = entity.Subject.SubjectCode,
                     SubjectName = entity.Subject.SubjectName,
                     Credit = entity.Subject.Credit
-                },
-                Enrollments = entity.Enrollments?.Select(enrollment => new EnrollmentModel
+                } : null,
+                Enrollments = expandEnrollments ? entity.Enrollments?.Select(enrollment => new EnrollmentModel
                 {
                     EnrollmentId = enrollment.EnrollmentId,
                     StudentId = enrollment.StudentId,
                     StudentName = enrollment.Student?.FullName,
-                    Student = enrollment.Student == null ? null : new StudentModel
+                    Student = expandEnrollmentStudent && enrollment.Student != null ? new StudentModel
                     {
                         StudentId = enrollment.Student.StudentId,
                         FullName = enrollment.Student.FullName,
                         Email = enrollment.Student.Email,
                         DateOfBirth = enrollment.Student.DateOfBirth
-                    },
+                    } : null,
                     CourseId = enrollment.CourseId,
                     CourseName = entity.CourseName,
                     EnrollDate = enrollment.EnrollDate,
                     Status = enrollment.Status
-                }).ToList()
+                }).ToList() : null
             };
         }
     }

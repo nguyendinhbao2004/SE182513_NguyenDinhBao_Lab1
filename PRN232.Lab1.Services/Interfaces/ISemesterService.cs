@@ -5,7 +5,7 @@ namespace PRN232.Lab1.Services.Interfaces
     public interface ISemesterService
     {
         Task<PagedResult<SemesterModel>> GetPagedAsync(QueryOptions options);
-        Task<SemesterModel?> GetByIdAsync(int id);
+        Task<SemesterModel?> GetByIdAsync(int id, QueryOptions? options = null);
         Task<ServiceResult<SemesterModel>> CreateAsync(SemesterModel model);
         Task<ServiceResult<SemesterModel>> UpdateAsync(int id, SemesterModel model);
         Task<ServiceResult<bool>> DeleteAsync(int id);

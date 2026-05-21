@@ -81,11 +81,13 @@ namespace PRN232.Lab1.Services.Services
 
             query = ApplySorting(query, options);
 
-            return await QueryHelpers.ToPagedResultAsync(query, options, MapEnrollment);
+            return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapEnrollment(entity, options));
         }
 
-        public async Task<EnrollmentModel?> GetByIdAsync(int id)
+        public async Task<EnrollmentModel?> GetByIdAsync(int id, QueryOptions? options = null)
         {
+            options ??= new QueryOptions();
+
             var entity = await _enrollmentRepository.Query()
                 .Include(x => x.Student)
                 .Include(x => x.Course!)
@@ -94,7 +96,7 @@ namespace PRN232.Lab1.Services.Services
                     .ThenInclude(x => x.Subject)
                 .FirstOrDefaultAsync(x => x.EnrollmentId == id);
 
-            return entity == null ? null : MapEnrollment(entity);
+            return entity == null ? null : MapEnrollment(entity, options);
         }
 
         public async Task<ServiceResult<EnrollmentModel>> CreateAsync(EnrollmentModel model)
@@ -225,23 +227,23 @@ namespace PRN232.Lab1.Services.Services
             return ordered ? query : query.OrderBy(x => x.EnrollmentId);
         }
 
-        private static EnrollmentModel MapEnrollment(Enrollment entity)
+        private static EnrollmentModel MapEnrollment(Enrollment entity, QueryOptions options)
         {
             return new EnrollmentModel
             {
                 EnrollmentId = entity.EnrollmentId,
                 StudentId = entity.StudentId,
                 StudentName = entity.Student?.FullName,
-                Student = entity.Student == null ? null : new StudentModel
+                Student = options.HasExpand("student") && entity.Student != null ? new StudentModel
                 {
                     StudentId = entity.Student.StudentId,
                     FullName = entity.Student.FullName,
                     Email = entity.Student.Email,
                     DateOfBirth = entity.Student.DateOfBirth
-                },
+                } : null,
                 CourseId = entity.CourseId,
                 CourseName = entity.Course?.CourseName,
-                Course = entity.Course == null ? null : new CourseModel
+                Course = options.HasExpand("course") && entity.Course != null ? new CourseModel
                 {
                     CourseId = entity.Course.CourseId,
                     CourseName = entity.Course.CourseName,
@@ -264,7 +266,7 @@ namespace PRN232.Lab1.Services.Services
                         SubjectName = entity.Course.Subject.SubjectName,
                         Credit = entity.Course.Subject.Credit
                     }
-                },
+                } : null,
                 EnrollDate = entity.EnrollDate,
                 Status = entity.Status
             };

@@ -23,9 +23,13 @@ namespace PRN232.Lab1.Services.Services
         {
             options.Normalize();
 
-            IQueryable<Subject> query = _subjectRepository.Query()
-                .Include(x => x.Courses!)
+            IQueryable<Subject> query = _subjectRepository.Query();
+
+            if (options.HasExpand("courses"))
+            {
+                query = query.Include(x => x.Courses!)
                     .ThenInclude(x => x.Semester);
+            }
 
             if (options.SubjectId.HasValue)
             {
@@ -41,7 +45,7 @@ namespace PRN232.Lab1.Services.Services
             {
                 query = query.Where(x => x.Credit <= options.MaxCredit.Value);
             }
-
+            
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 var search = options.Search.Trim();
@@ -52,17 +56,24 @@ namespace PRN232.Lab1.Services.Services
 
             query = ApplySorting(query, options);
 
-            return await QueryHelpers.ToPagedResultAsync(query, options, MapSubject);
+            return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapSubject(entity, options));
         }
 
-        public async Task<SubjectModel?> GetByIdAsync(int id)
+        public async Task<SubjectModel?> GetByIdAsync(int id, QueryOptions? options = null)
         {
-            var entity = await _subjectRepository.Query()
-                .Include(x => x.Courses!)
-                    .ThenInclude(x => x.Semester)
-                .FirstOrDefaultAsync(x => x.SubjectId == id);
+            options ??= new QueryOptions();
 
-            return entity == null ? null : MapSubject(entity);
+            IQueryable<Subject> query = _subjectRepository.Query();
+
+            if (options.HasExpand("courses"))
+            {
+                query = query.Include(x => x.Courses!)
+                    .ThenInclude(x => x.Semester);
+            }
+
+            var entity = await query.FirstOrDefaultAsync(x => x.SubjectId == id);
+
+            return entity == null ? null : MapSubject(entity, options);
         }
 
         public async Task<ServiceResult<SubjectModel>> CreateAsync(SubjectModel model)
@@ -83,7 +94,7 @@ namespace PRN232.Lab1.Services.Services
             await _subjectRepository.AddAsync(entity);
             await _subjectRepository.SaveChangesAsync();
 
-            return ServiceResult<SubjectModel>.Ok(MapSubject(entity), "Subject created successfully");
+            return ServiceResult<SubjectModel>.Ok(MapSubject(entity, new QueryOptions()), "Subject created successfully");
         }
 
         public async Task<ServiceResult<SubjectModel>> UpdateAsync(int id, SubjectModel model)
@@ -108,7 +119,7 @@ namespace PRN232.Lab1.Services.Services
             _subjectRepository.Update(entity);
             await _subjectRepository.SaveChangesAsync();
 
-            return ServiceResult<SubjectModel>.Ok(MapSubject(entity), "Subject updated successfully");
+            return ServiceResult<SubjectModel>.Ok(MapSubject(entity, new QueryOptions()), "Subject updated successfully");
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(int id)
@@ -189,7 +200,7 @@ namespace PRN232.Lab1.Services.Services
             return ordered ? query : query.OrderBy(x => x.SubjectId);
         }
 
-        private static SubjectModel MapSubject(Subject entity)
+        private static SubjectModel MapSubject(Subject entity, QueryOptions options)
         {
             return new SubjectModel
             {
@@ -197,7 +208,7 @@ namespace PRN232.Lab1.Services.Services
                 SubjectCode = entity.SubjectCode,
                 SubjectName = entity.SubjectName,
                 Credit = entity.Credit,
-                Courses = entity.Courses?.Select(course => new CourseModel
+                Courses = options.HasExpand("courses") ? entity.Courses?.Select(course => new CourseModel
                 {
                     CourseId = course.CourseId,
                     CourseName = course.CourseName,
@@ -206,7 +217,7 @@ namespace PRN232.Lab1.Services.Services
                     SubjectId = course.SubjectId,
                     SubjectCode = entity.SubjectCode,
                     SubjectName = entity.SubjectName
-                }).ToList()
+                }).ToList() : null
             };
         }
     }

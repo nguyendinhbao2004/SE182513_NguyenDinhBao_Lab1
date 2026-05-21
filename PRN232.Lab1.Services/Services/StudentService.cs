@@ -19,13 +19,18 @@ namespace PRN232.Lab1.Services.Services
         {
             options.Normalize();
 
-            IQueryable<Student> query = _studentRepository.Query()
-                .Include(x => x.Enrollments!)
-                    .ThenInclude(x => x.Course!)
-                    .ThenInclude(x => x.Semester)
-                .Include(x => x.Enrollments!)
-                    .ThenInclude(x => x.Course!)
-                    .ThenInclude(x => x.Subject);
+            IQueryable<Student> query = _studentRepository.Query();
+
+            if (options.HasExpand("enrollments"))
+            {
+                query = query
+                    .Include(x => x.Enrollments!)
+                        .ThenInclude(x => x.Course!)
+                        .ThenInclude(x => x.Semester)
+                    .Include(x => x.Enrollments!)
+                        .ThenInclude(x => x.Course!)
+                        .ThenInclude(x => x.Subject);
+            }
 
             if (options.StudentId.HasValue)
             {
@@ -52,21 +57,29 @@ namespace PRN232.Lab1.Services.Services
 
             query = ApplySorting(query, options);
 
-            return await QueryHelpers.ToPagedResultAsync(query, options, MapStudent);
+            return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapStudent(entity, options));
         }
 
-        public async Task<StudentModel?> GetByIdAsync(int id)
+        public async Task<StudentModel?> GetByIdAsync(int id, QueryOptions? options = null)
         {
-            var entity = await _studentRepository.Query()
-                .Include(x => x.Enrollments!)
-                    .ThenInclude(x => x.Course!)
-                    .ThenInclude(x => x.Semester)
-                .Include(x => x.Enrollments!)
-                    .ThenInclude(x => x.Course!)
-                    .ThenInclude(x => x.Subject)
-                .FirstOrDefaultAsync(x => x.StudentId == id);
+            options ??= new QueryOptions();
 
-            return entity == null ? null : MapStudent(entity);
+            IQueryable<Student> query = _studentRepository.Query();
+
+            if (options.HasExpand("enrollments"))
+            {
+                query = query
+                    .Include(x => x.Enrollments!)
+                        .ThenInclude(x => x.Course!)
+                        .ThenInclude(x => x.Semester)
+                    .Include(x => x.Enrollments!)
+                        .ThenInclude(x => x.Course!)
+                        .ThenInclude(x => x.Subject);
+            }
+
+            var entity = await query.FirstOrDefaultAsync(x => x.StudentId == id);
+
+            return entity == null ? null : MapStudent(entity, options);
         }
 
         public async Task<ServiceResult<StudentModel>> CreateAsync(StudentModel model)
@@ -87,7 +100,7 @@ namespace PRN232.Lab1.Services.Services
             await _studentRepository.AddAsync(entity);
             await _studentRepository.SaveChangesAsync();
 
-            return ServiceResult<StudentModel>.Ok(MapStudent(entity), "Student created successfully");
+            return ServiceResult<StudentModel>.Ok(MapStudent(entity, new QueryOptions()), "Student created successfully");
         }
 
         public async Task<ServiceResult<StudentModel>> UpdateAsync(int id, StudentModel model)
@@ -112,7 +125,7 @@ namespace PRN232.Lab1.Services.Services
             _studentRepository.Update(entity);
             await _studentRepository.SaveChangesAsync();
 
-            return ServiceResult<StudentModel>.Ok(MapStudent(entity), "Student updated successfully");
+            return ServiceResult<StudentModel>.Ok(MapStudent(entity, new QueryOptions()), "Student updated successfully");
         }
 
         public async Task<ServiceResult<bool>> DeleteAsync(int id)
@@ -186,7 +199,7 @@ namespace PRN232.Lab1.Services.Services
             return ordered ? query : query.OrderBy(x => x.StudentId);
         }
 
-        private static StudentModel MapStudent(Student entity)
+        private static StudentModel MapStudent(Student entity, QueryOptions options)
         {
             return new StudentModel
             {
@@ -194,7 +207,9 @@ namespace PRN232.Lab1.Services.Services
                 FullName = entity.FullName,
                 Email = entity.Email,
                 DateOfBirth = entity.DateOfBirth,
-                Enrollments = entity.Enrollments?.Select(enrollment => MapEnrollmentSummary(enrollment, entity)).ToList()
+                Enrollments = options.HasExpand("enrollments")
+                    ? entity.Enrollments?.Select(enrollment => MapEnrollmentSummary(enrollment, entity)).ToList()
+                    : null
             };
         }
 

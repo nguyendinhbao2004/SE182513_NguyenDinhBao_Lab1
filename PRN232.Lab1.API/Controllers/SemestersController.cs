@@ -35,15 +35,15 @@ namespace PRN232.Lab1.API.Controllers
         [ProducesResponseType(typeof(Response<SemesterResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Response<SemesterResponse>>> GetSemesterById(int id)
+        public async Task<ActionResult<Response<object>>> GetSemesterById(int id, [FromQuery] QueryParameters query)
         {
-            var semester = await _semesterService.GetByIdAsync(id);
+            var semester = await _semesterService.GetByIdAsync(id, query.ToOptions());
             if (semester == null)
             {
                 return NotFound(Failure("Semester not found"));
             }
 
-            return Ok(Success(semester.ToResponse()));
+            return Ok(Success(FieldSelector.Apply(semester.ToResponse(), query.Fields)));
         }
 
         [HttpPost]

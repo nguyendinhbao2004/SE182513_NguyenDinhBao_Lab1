@@ -35,15 +35,15 @@ namespace PRN232.Lab1.API.Controllers
         [ProducesResponseType(typeof(Response<SubjectResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Response<SubjectResponse>>> GetSubjectById(int id)
+        public async Task<ActionResult<Response<object>>> GetSubjectById(int id, [FromQuery] QueryParameters query)
         {
-            var subject = await _subjectService.GetByIdAsync(id);
+            var subject = await _subjectService.GetByIdAsync(id, query.ToOptions());
             if (subject == null)
             {
                 return NotFound(Failure("Subject not found"));
             }
 
-            return Ok(Success(subject.ToResponse()));
+            return Ok(Success(FieldSelector.Apply(subject.ToResponse(), query.Fields)));
         }
 
         [HttpPost]
