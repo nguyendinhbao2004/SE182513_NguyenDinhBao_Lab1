@@ -1,6 +1,6 @@
 using System;
 
-namespace PRN232.Lab1.Services.Models
+namespace PRN232.Lab1.Services.Models.BusinessModels.Enrollment
 {
     public class EnrollmentModel
     {

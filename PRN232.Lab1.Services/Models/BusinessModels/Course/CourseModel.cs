@@ -1,4 +1,4 @@
-namespace PRN232.Lab1.Services.Models
+namespace PRN232.Lab1.Services.Models.BusinessModels.Course
 {
     public class CourseModel
     {
