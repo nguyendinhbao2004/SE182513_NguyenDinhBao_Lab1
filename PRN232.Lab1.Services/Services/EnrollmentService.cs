@@ -28,29 +28,12 @@ namespace PRN232.Lab1.Services.Services
         {
             options.Normalize();
 
-            var query = _enrollmentRepository.Query();
-
-            if (options.HasExpand("student"))
-            {
-                query = query.Include(x => x.Student);
-            }
-
-            if (options.HasExpand("course.semester"))
-            {
-                query = query.Include(x => x.Course!)
-                    .ThenInclude(x => x.Semester);
-            }
-
-            if (options.HasExpand("course.subject"))
-            {
-                query = query.Include(x => x.Course!)
+            IQueryable<Enrollment> query = _enrollmentRepository.Query()
+                .Include(x => x.Student)
+                .Include(x => x.Course!)
+                    .ThenInclude(x => x.Semester)
+                .Include(x => x.Course!)
                     .ThenInclude(x => x.Subject);
-            }
-
-            if (options.HasExpand("course"))
-            {
-                query = query.Include(x => x.Course);
-            }
 
             if (options.StudentId.HasValue)
             {

@@ -19,31 +19,13 @@ namespace PRN232.Lab1.Services.Services
         {
             options.Normalize();
 
-            var query = _studentRepository.Query();
-
-            if (options.HasExpand("enrollments.course.semester"))
-            {
-                query = query.Include(x => x.Enrollments!)
+            IQueryable<Student> query = _studentRepository.Query()
+                .Include(x => x.Enrollments!)
                     .ThenInclude(x => x.Course!)
-                    .ThenInclude(x => x.Semester);
-            }
-
-            if (options.HasExpand("enrollments.course.subject"))
-            {
-                query = query.Include(x => x.Enrollments!)
+                    .ThenInclude(x => x.Semester)
+                .Include(x => x.Enrollments!)
                     .ThenInclude(x => x.Course!)
                     .ThenInclude(x => x.Subject);
-            }
-
-            if (options.HasExpand("enrollments.course"))
-            {
-                query = query.Include(x => x.Enrollments!)
-                    .ThenInclude(x => x.Course);
-            }
-            else if (options.HasExpand("enrollments"))
-            {
-                query = query.Include(x => x.Enrollments);
-            }
 
             if (options.StudentId.HasValue)
             {
@@ -212,16 +194,17 @@ namespace PRN232.Lab1.Services.Services
                 FullName = entity.FullName,
                 Email = entity.Email,
                 DateOfBirth = entity.DateOfBirth,
-                Enrollments = entity.Enrollments?.Select(MapEnrollmentSummary).ToList()
+                Enrollments = entity.Enrollments?.Select(enrollment => MapEnrollmentSummary(enrollment, entity)).ToList()
             };
         }
 
-        private static EnrollmentModel MapEnrollmentSummary(Enrollment entity)
+        private static EnrollmentModel MapEnrollmentSummary(Enrollment entity, Student student)
         {
             return new EnrollmentModel
             {
                 EnrollmentId = entity.EnrollmentId,
                 StudentId = entity.StudentId,
+                StudentName = student.FullName,
                 CourseId = entity.CourseId,
                 CourseName = entity.Course?.CourseName,
                 Course = entity.Course == null ? null : new CourseModel

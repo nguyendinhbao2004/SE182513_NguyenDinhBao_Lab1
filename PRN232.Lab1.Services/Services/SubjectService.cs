@@ -23,18 +23,9 @@ namespace PRN232.Lab1.Services.Services
         {
             options.Normalize();
 
-            var query = _subjectRepository.Query();
-
-            if (options.HasExpand("courses.semester"))
-            {
-                query = query.Include(x => x.Courses!)
+            IQueryable<Subject> query = _subjectRepository.Query()
+                .Include(x => x.Courses!)
                     .ThenInclude(x => x.Semester);
-            }
-
-            if (options.HasExpand("courses"))
-            {
-                query = query.Include(x => x.Courses);
-            }
 
             if (options.SubjectId.HasValue)
             {
