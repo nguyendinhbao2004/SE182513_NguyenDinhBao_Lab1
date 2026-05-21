@@ -1,0 +1,15 @@
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\bin\Debug\net10.0\PRN232.Lab1.Services.deps.json
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\bin\Debug\net10.0\PRN232.Lab1.Services.dll
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\bin\Debug\net10.0\PRN232.Lab1.Services.pdb
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\bin\Debug\net10.0\PRN232.Lab1.Repositories.dll
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\bin\Debug\net10.0\PRN232.Lab1.Repositories.pdb
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.csproj.AssemblyReference.cache
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.GeneratedMSBuildEditorConfig.editorconfig
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.AssemblyInfoInputs.cache
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.AssemblyInfo.cs
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.csproj.CoreCompileInputs.cache
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.L.9C240840.Up2Date
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.dll
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\refint\PRN232.Lab1.Services.dll
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\PRN232.Lab1.Services.pdb
+D:\ki8\PRN232\PRN232.Lab1\PRN232.Lab1.Services\obj\Debug\net10.0\ref\PRN232.Lab1.Services.dll
