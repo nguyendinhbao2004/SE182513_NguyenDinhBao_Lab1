@@ -7,6 +7,7 @@ namespace PRN232.Lab1.Services.Interfaces
     public interface IEnrollmentService
     {
         Task<PagedResult<EnrollmentModel>> GetPagedAsync(QueryOptions options);
+        Task<PagedResult<EnrollmentModel>?> GetByCourseIdPagedAsync(int courseId, QueryOptions options);
         Task<EnrollmentModel?> GetByIdAsync(int id, QueryOptions? options = null);
         Task<ServiceResult<EnrollmentModel>> CreateAsync(EnrollmentModel model);
         Task<ServiceResult<EnrollmentModel>> UpdateAsync(int id, EnrollmentModel model);

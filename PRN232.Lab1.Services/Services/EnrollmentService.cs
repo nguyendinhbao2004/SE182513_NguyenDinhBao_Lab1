@@ -49,6 +49,37 @@ namespace PRN232.Lab1.Services.Services
             return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapEnrollment(entity, options));
         }
 
+        public async Task<PagedResult<EnrollmentModel>?> GetByCourseIdPagedAsync(int courseId, QueryOptions options)
+        {
+            options.Normalize();
+
+            var courseExists = await _courseRepository.Query().AnyAsync(x => x.CourseId == courseId);
+            if (!courseExists)
+            {
+                return null;
+            }
+
+            IQueryable<Enrollment> query = _enrollmentRepository.Query()
+                .Include(x => x.Student)
+                .Include(x => x.Course!)
+                    .ThenInclude(x => x.Semester)
+                .Include(x => x.Course!)
+                    .ThenInclude(x => x.Subject)
+                .Where(x => x.CourseId == courseId);
+
+            if (!string.IsNullOrWhiteSpace(options.Search))
+            {
+                var search = options.Search.Trim();
+                query = query.Where(x =>
+                    (x.Status != null && x.Status.Contains(search)) ||
+                    (x.Student != null && x.Student.FullName != null && x.Student.FullName.Contains(search)));
+            }
+
+            query = ApplySorting(query, options);
+
+            return await QueryHelpers.ToPagedResultAsync(query, options, entity => MapEnrollment(entity, options));
+        }
+
         public async Task<EnrollmentModel?> GetByIdAsync(int id, QueryOptions? options = null)
         {
             options ??= new QueryOptions();

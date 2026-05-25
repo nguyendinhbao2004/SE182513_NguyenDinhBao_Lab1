@@ -12,10 +12,14 @@ namespace PRN232.Lab1.API.Controllers
     public class CoursesController : ApiControllerBase
     {
         private readonly ICourseService _courseService;
+        private readonly IEnrollmentService _enrollmentService;
 
-        public CoursesController(ICourseService courseService)
+        public CoursesController(
+            ICourseService courseService,
+            IEnrollmentService enrollmentService)
         {
             _courseService = courseService;
+            _enrollmentService = enrollmentService;
         }
 
         [HttpGet]
@@ -44,6 +48,24 @@ namespace PRN232.Lab1.API.Controllers
             }
 
             return Ok(Success(course.ToResponse()));
+        }
+
+        [HttpGet("{id:int}/enrollments")]
+        [ProducesResponseType(typeof(Response<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Response<object>), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<Response<object>>> GetCourseEnrollments(int id, [FromQuery] QueryParameters query)
+        {
+            var result = await _enrollmentService.GetByCourseIdPagedAsync(id, query.ToOptions());
+            if (result == null)
+            {
+                return NotFound(Failure("Course not found"));
+            }
+
+            var responses = result.Items.Select(x => x.ToResponse()).ToList();
+            var data = FieldSelector.Apply(responses, query.Fields);
+
+            return Ok(Success(data, pagination: Pagination(result)));
         }
 
         [HttpPost]
