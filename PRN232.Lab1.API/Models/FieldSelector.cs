@@ -46,7 +46,11 @@ namespace PRN232.Lab1.API.Models
                 var jsonName = JsonNamingPolicy.CamelCase.ConvertName(property.Name);
                 if (fields.Contains(property.Name) || fields.Contains(jsonName))
                 {
-                    shaped[jsonName] = property.GetValue(item);
+                    var value = property.GetValue(item);
+                    if (value != null)
+                    {
+                        shaped[jsonName] = value;
+                    }
                 }
             }
 

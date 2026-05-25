@@ -31,21 +31,6 @@ namespace PRN232.Lab1.Services.Services
                     .ThenInclude(x => x.Semester);
             }
 
-            if (options.SubjectId.HasValue)
-            {
-                query = query.Where(x => x.SubjectId == options.SubjectId.Value);
-            }
-
-            if (options.MinCredit.HasValue)
-            {
-                query = query.Where(x => x.Credit >= options.MinCredit.Value);
-            }
-
-            if (options.MaxCredit.HasValue)
-            {
-                query = query.Where(x => x.Credit <= options.MaxCredit.Value);
-            }
-            
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 var search = options.Search.Trim();
@@ -204,11 +189,11 @@ namespace PRN232.Lab1.Services.Services
         {
             return new SubjectModel
             {
-                SubjectId = entity.SubjectId,
-                SubjectCode = entity.SubjectCode,
-                SubjectName = entity.SubjectName,
-                Credit = entity.Credit,
-                Courses = options.HasExpand("courses") ? entity.Courses?.Select(course => new CourseModel
+                SubjectId = options.HasField(nameof(SubjectModel.SubjectId)) ? entity.SubjectId : default,
+                SubjectCode = options.HasField(nameof(SubjectModel.SubjectCode)) ? entity.SubjectCode : null,
+                SubjectName = options.HasField(nameof(SubjectModel.SubjectName)) ? entity.SubjectName : null,
+                Credit = options.HasField(nameof(SubjectModel.Credit)) ? entity.Credit : default,
+                Courses = options.HasField(nameof(SubjectModel.Courses)) && options.HasExpand("courses") ? entity.Courses?.Select(course => new CourseModel
                 {
                     CourseId = course.CourseId,
                     CourseName = course.CourseName,

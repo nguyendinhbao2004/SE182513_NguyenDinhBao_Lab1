@@ -35,15 +35,15 @@ namespace PRN232.Lab1.API.Controllers
         [ProducesResponseType(typeof(Response<EnrollmentResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Response<object>>> GetEnrollmentById(int id, [FromQuery] QueryParameters query)
+        public async Task<ActionResult<Response<EnrollmentResponse>>> GetEnrollmentById(int id)
         {
-            var enrollment = await _enrollmentService.GetByIdAsync(id, query.ToOptions());
+            var enrollment = await _enrollmentService.GetByIdAsync(id);
             if (enrollment == null)
             {
                 return NotFound(Failure("Enrollment not found"));
             }
 
-            return Ok(Success(FieldSelector.Apply(enrollment.ToResponse(), query.Fields)));
+            return Ok(Success(enrollment.ToResponse()));
         }
 
         [HttpPost]

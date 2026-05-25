@@ -35,41 +35,6 @@ namespace PRN232.Lab1.Services.Services
                 .Include(x => x.Course!)
                     .ThenInclude(x => x.Subject);
 
-            if (options.StudentId.HasValue)
-            {
-                query = query.Where(x => x.StudentId == options.StudentId.Value);
-            }
-
-            if (options.CourseId.HasValue)
-            {
-                query = query.Where(x => x.CourseId == options.CourseId.Value);
-            }
-
-            if (options.SemesterId.HasValue)
-            {
-                query = query.Where(x => x.Course != null && x.Course.SemesterId == options.SemesterId.Value);
-            }
-
-            if (options.SubjectId.HasValue)
-            {
-                query = query.Where(x => x.Course != null && x.Course.SubjectId == options.SubjectId.Value);
-            }
-
-            if (!string.IsNullOrWhiteSpace(options.Status))
-            {
-                query = query.Where(x => x.Status == options.Status.Trim());
-            }
-
-            if (options.FromDate.HasValue)
-            {
-                query = query.Where(x => x.EnrollDate >= options.FromDate.Value);
-            }
-
-            if (options.ToDate.HasValue)
-            {
-                query = query.Where(x => x.EnrollDate <= options.ToDate.Value);
-            }
-
             if (!string.IsNullOrWhiteSpace(options.Search))
             {
                 var search = options.Search.Trim();
@@ -231,19 +196,19 @@ namespace PRN232.Lab1.Services.Services
         {
             return new EnrollmentModel
             {
-                EnrollmentId = entity.EnrollmentId,
-                StudentId = entity.StudentId,
-                StudentName = entity.Student?.FullName,
-                Student = options.HasExpand("student") && entity.Student != null ? new StudentModel
+                EnrollmentId = options.HasField(nameof(EnrollmentModel.EnrollmentId)) ? entity.EnrollmentId : default,
+                StudentId = options.HasField(nameof(EnrollmentModel.StudentId)) ? entity.StudentId : default,
+                StudentName = options.HasField(nameof(EnrollmentModel.StudentName)) ? entity.Student?.FullName : null,
+                Student = options.HasField(nameof(EnrollmentModel.Student)) && options.HasExpand("student") && entity.Student != null ? new StudentModel
                 {
                     StudentId = entity.Student.StudentId,
                     FullName = entity.Student.FullName,
                     Email = entity.Student.Email,
                     DateOfBirth = entity.Student.DateOfBirth
                 } : null,
-                CourseId = entity.CourseId,
-                CourseName = entity.Course?.CourseName,
-                Course = options.HasExpand("course") && entity.Course != null ? new CourseModel
+                CourseId = options.HasField(nameof(EnrollmentModel.CourseId)) ? entity.CourseId : default,
+                CourseName = options.HasField(nameof(EnrollmentModel.CourseName)) ? entity.Course?.CourseName : null,
+                Course = options.HasField(nameof(EnrollmentModel.Course)) && options.HasExpand("course") && entity.Course != null ? new CourseModel
                 {
                     CourseId = entity.Course.CourseId,
                     CourseName = entity.Course.CourseName,
@@ -267,8 +232,8 @@ namespace PRN232.Lab1.Services.Services
                         Credit = entity.Course.Subject.Credit
                     }
                 } : null,
-                EnrollDate = entity.EnrollDate,
-                Status = entity.Status
+                EnrollDate = options.HasField(nameof(EnrollmentModel.EnrollDate)) ? entity.EnrollDate : default,
+                Status = options.HasField(nameof(EnrollmentModel.Status)) ? entity.Status : null
             };
         }
     }
