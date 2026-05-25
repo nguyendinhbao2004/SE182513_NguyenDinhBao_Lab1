@@ -54,16 +54,16 @@ namespace PRN232.Lab1.API.Controllers
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(Response<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<Response<object>>> GetCourseEnrollments(int id, [FromQuery] QueryParameters query)
+        public async Task<ActionResult<Response<object>>> GetCourseEnrollments(int id)
         {
-            var result = await _enrollmentService.GetByCourseIdPagedAsync(id, query.ToOptions());
+            var result = await _enrollmentService.GetByCourseIdPagedAsync(id, new QueryOptions());
             if (result == null)
             {
                 return NotFound(Failure("Course not found"));
             }
 
             var responses = result.Items.Select(x => x.ToResponse()).ToList();
-            var data = FieldSelector.Apply(responses, query.Fields);
+            var data = FieldSelector.Apply(responses, null);
 
             return Ok(Success(data, pagination: Pagination(result)));
         }
